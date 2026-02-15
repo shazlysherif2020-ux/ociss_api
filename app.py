@@ -126,14 +126,19 @@ if st.button("Calculate 5-Year Survival Probability"):
 
     df = pd.DataFrame([input_dict])
 
-    # Ensure correct order
     all_features = list(category_dict.keys()) + numeric_vars
     df = df[all_features]
 
-    # Ensure categorical as string
     for col in category_dict.keys():
         df[col] = df[col].astype(str)
 
-    probability = model.predict_proba(df)[0][1]
+    from catboost import Pool
+
+    prediction_pool = Pool(
+        df,
+        cat_features=list(category_dict.keys())
+    )
+
+    probability = model.predict_proba(prediction_pool)[0][1]
 
     st.success(f"Estimated 5-Year Survival Probability: {probability*100:.2f}%")
