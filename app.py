@@ -5,41 +5,81 @@ import pandas as pd
 st.set_page_config(page_title="OCISS Survival Calculator")
 
 st.title("OCISS – 5-Year Survival Prediction")
-st.write("Clinical Decision Support Tool for Ovarian Cancer")
+st.warning("Clinical decision support tool. Does not replace medical judgment.")
 
-st.warning("This tool is intended for clinical decision support and does not replace professional medical judgment.")
+# -------------------------
+# Feature lists (FINAL)
+# -------------------------
 
+categorical_vars = [
+    'Ethnicity',
+    'abdominal_invasion',
+    'Grade',
+    'Ascites',
+    'BRCA1', 'BRCA2', 'MSH6', 'PMS2','MLH','MSH2',
+    'Cytology',
+    'PMH',
+    'Site',
+    'Pelvic_invasions_others',
+    'Abd_surg_others',
+    'FH_breast',
+    'Histology',
+    'Symptom',
+    'Pleura',
+    'Distant_metastasis',
+    'ECOG',
+    'Pleura_cytology',
+    'Uterus',
+    'Menopause'
+]
+
+numeric_vars = [
+    'BMI', 'Parity', 'Size_cm',
+    'iliac_no', 'iliac_ln_size',
+    'CA_125'
+]
+
+# -------------------------
 # Load model
+# -------------------------
+
 model = cb.CatBoostClassifier()
 model.load_model("ociss_model.cbm")
 
-# ---------------- INPUTS ---------------- #
+# -------------------------
+# Build Input Form
+# -------------------------
 
-age = st.number_input("Age", min_value=18, max_value=100, value=60)
-stage = st.selectbox("FIGO Stage", [1,2,3,4])
-grade = st.selectbox("Tumor Grade", [1,2,3])
-residual = st.selectbox("Residual Disease", ["No", "Yes"])
+st.header("Categorical Variables")
 
-residual_value = 1 if residual == "Yes" else 0
+input_dict = {}
 
-# ---------------- CALCULATION ---------------- #
+for var in categorical_vars:
+    value = st.text_input(var)   # free text for now (safer than wrong encoding)
+    input_dict[var] = value
+
+st.header("Numeric Variables")
+
+for var in numeric_vars:
+    value = st.number_input(var, value=0.0)
+    input_dict[var] = value
+
+# -------------------------
+# Prediction
+# -------------------------
 
 if st.button("Calculate 5-Year Survival Probability"):
 
-    input_data = pd.DataFrame([{
-        "age": age,
-        "stage": stage,
-        "grade": grade,
-        "residual_disease": residual_value
-    }])
+    # Create DataFrame
+    df = pd.DataFrame([input_dict])
 
-    probability = model.predict_proba(input_data)[0][1]
+    # IMPORTANT: ensure correct column order
+    df = df[categorical_vars + numeric_vars]
+
+    # Ensure categorical columns are strings
+    for col in categorical_vars:
+        df[col] = df[col].astype(str)
+
+    probability = model.predict_proba(df)[0][1]
 
     st.success(f"Estimated 5-Year Survival Probability: {probability*100:.2f}%")
-
-    if probability > 0.7:
-        st.info("Risk Category: Favorable")
-    elif probability > 0.4:
-        st.warning("Risk Category: Intermediate")
-    else:
-        st.error("Risk Category: High Risk")
