@@ -1,232 +1,278 @@
 {
-  "Ethnicity": [
-    "Cacuasian",
-    "Middle Eastern",
-    "Others"
-  ],
-  "abdominal_invasion": [
-    "No",
-    "peritoneal carcinomatosis",
-    "omental cake",
-    "omental deposits >= 2 cm",
-    "omental deposits < 2 cm"
-  ],
-  "Grade": [
-    "3.0",
-    "2.0",
-    "1.0"
-  ],
-  "Ascites": [
-    "Absent",
-    "Marked",
-    "Mild"
-  ],
-  "BRCA1": [
-    "unknown",
-    "positive; somatic",
-    "Negative",
-    "positive; germline"
-  ],
-  "BRCA2": [
-    "unknown",
-    "Negative",
-    "positive; germline",
-    "Other",
-    "positive; somatic"
-  ],
-  "MSH6": [
-    "unknown",
-    "Negative",
-    "Other",
-    "positive; germline"
-  ],
-  "PMS2": [
-    "unknown",
-    "Negative",
-    "positive; somatic"
-  ],
-  "MLH": [
-    "unknown",
-    "Negative",
-    "positive; somatic",
-    "Other",
-    "positive; germline"
-  ],
-  "MSH2": [
-    "unknown",
-    "Negative"
-  ],
-  "Cytology": [
-    "Negative",
-    "positive"
-  ],
-  "PMH": [
-    "No",
-    "Others",
-    "Type 2 DM",
-    "Hypertension",
-    "Type 1 DM",
-    "Other",
-    "Chronic renal disease"
-  ],
-  "Site": [
-    "Right",
-    "Bilateral",
-    "Left"
-  ],
-  "Pelvic_invasions_others": [
-    "No",
-    "yes",
-    "pelvic peritoneum: Douglas pouch, vesicouterine pouch",
-    "Other",
-    "Pelvis obtecta",
-    "pelvic peritoneum",
-    "douglas pouch, parametrium, pelvic peritoenum",
-    "vesicouterine  pouch carcinosis, pelvic peritoneum, Douglas pouch",
-    "n",
-    "rectum intestine, pelvic peritoneum",
-    "pelvic peritoenum, Douglas pouch, sigmoid-rectum intestine",
-    "pelvic peritoneum, Douglas pouch, sigmoid-rectum serosa",
-    "sigma, rectum",
-    "Douglas involvement and broad ligaments involvement",
-    "Douglas pouch, sigmoid serosa, broad ligament",
-    "bilateral broad ligamenti involvement, Douglas obliteration, rectal serosa involvement",
-    "pelvic peritoneum: prevesical peritoneum, broad ligament, pouch of Douglas, sigmoid serosal",
-    "pelvic peritoneum, mesosigmoid",
-    "Douglas pouch, vesicouterine pouch,",
-    "Broad ligament, douglas pouch",
-    "pelvic peritoneum, Douglas pouch, bladder peritoenum",
-    "peritoneum",
-    "no",
-    "pelvic peritoneum, sigmoid intestine",
-    "rectum serosa, pelvic peritoneum",
-    "Douglas pouch, broad ligamenti, sigmoid-mesocolon, sigmoid serosa, caecum serosa",
-    "peritoneum, blader,colon, abdominal wall",
-    "Douglas obliteration and sigmoid serosa involvement",
-    "broad ligaments, Douglas pouch",
-    "Pelvic peritoneum, caecum serosa",
-    "iliac lymph nodes, Douglas pouch, broad ligaments, sigmoid-rectum serosa",
-    "pelvic peritoenum: broad ligament, Douglas pouch",
-    "pelvic peritoenum, Douglas pouch",
-    "pre-vescical and Douglas miliar nodules",
-    "Douglas pouch, rectum serosal",
-    "right pelvic peritoneum, Douglas pouch",
-    "pelvic peritoneum, vesicouterine pouch, sigmoid-rectum intestine, iliac lymph nodes",
-    "colon, peritoneum, diaphragm, small intestine, panceras, stomach",
-    "sigmoid-rectum intestine",
-    "broad ligament, iliac lymph nodes",
-    "sigmoid-rectum intestine, appendix, pelvic peritoneum",
-    "pelvic peritoneum, sigmoid-rectum serosa",
-    "bowel",
-    "broad ligaments, vesicouterine space",
-    "Sigmoid-rectum intestine, pelvis obtecta",
-    "sigmoid serosal",
-    "sigmoid-rectum serosa",
-    "pelvic peritoneum: Douglas pouch, vesicouterine pouch; sigmoid mesocolon",
-    "sigmoid-rectum intestine, pelvic peritoneum",
-    "small intestine, bowel, omentum, mesentery, peritoneum, liver, lungs",
-    "sigmoid serosa, Douglas pouch",
-    "sigmoid intestine",
-    "rectum intestine",
-    "pelvic peritoneum, rectum serosa",
-    "broad ligaments, Douglas pouch, pelvic peritoneum",
-    "Prevesical peritoneum, Douglas pouch, sigmoid-rectum serosa",
-    "broad ligaments, Douglas pouch, sigmoid serosa",
-    "small intestine, peritoneum-diaphragm",
-    "pelvic peritoneum: Douglas pouch, prevesical peritoneum",
-    "sigmoid-rectum intestine, cecum serosa",
-    "broad ligament, sigmoid-rectum serosa",
-    "sgmoid-rectum serosa, pelvic peritoneum",
-    "sigmoid colon",
-    "pelvic peritoenum",
-    "sigmoid-rectum serosa, pelvic peritoneum",
-    "pelvic peritoneum, sigmoid-rectum intestine",
-    "Douglas pouch, vesicouterine pouch",
-    "bowel, appendix",
-    "rectum",
-    "iliac lymph nodes, pelvic peritoneum",
-    "pelvic peritoneuam carcinomatosis",
-    "rectum intestine, Douglas pouch",
-    "bilateral broad ligamenti involvement, sigmoid serosa involvement",
-    "Pelvic peritoneum, sigmoid-rectum intestine",
-    "ileum, colon, peritoneum",
-    "sigma, peritoneum",
-    "Sigmoid-rectum serosa",
-    "sigma-colon",
-    "sigmoid-rectum itnestine, pelvic peritoneum",
-    "Douglas pouch, sigmoid serosa",
-    "sigma-colon, peritoneum",
-    "NO"
-  ],
-  "Abd_surg_others": [
-    "Yes",
-    "No",
-    "Other"
-  ],
-  "FH_breast": [
-    "No",
-    "Yes=first degree",
-    "Yes=second degree"
-  ],
-  "Histology": [
-    "Endometrioid",
-    "mucinous carcinoma",
-    "HGSOC",
-    "clear cell carcinoma",
-    "LGSOC",
-    "Carcinosarcoma",
-    "Undifferentiated",
-    "Others; specify",
-    "Dysgerminoma",
-    "Other",
-    "Immature Teratomas",
-    "Adult Granulosa Cell Tumor",
-    "Squamous Cell Carcinoma",
-    "Sertoli-Leydig Tumor",
-    "Juvenile Granulosa Cell Tumor"
-  ],
-  "Symptom": [
-    "Incidental",
-    "AUB",
-    "Abdominal discomfort and/or bloating",
-    "Abdominal pain",
-    "change of bowel movment",
-    "Asthenia and/or weight loss",
-    "dyspnea",
-    "Metastasis",
-    "DVT",
-    "Constitutional syndrome",
-    "abdominal mass",
-    "vaginal discharge",
-    "Other"
-  ],
-  "Pleura": [
-    "No effusion",
-    "Minimal effusion",
-    "Marked effusion"
-  ],
-  "Distant_metastasis": [
-    "No",
-    "Yes"
-  ],
-  "ECOG": [
-    "ECOG-0",
-    "ECOG-1",
-    "ECOG-2",
-    "ECOG-3",
-    "ECOG-4"
-  ],
-  "Pleura_cytology": [
-    "Negative",
-    "Not done",
-    "Positive"
-  ],
-  "Uterus": [
-    "No",
-    "Yes"
-  ],
-  "Menopause": [
-    "postmenopausal",
-    "premenopausal"
-  ]
+    "Ethnicity": [
+        "Cacuasian",
+        "Middle Eastern",
+        "Other",
+        "Others"
+    ],
+    "Smoking": [
+        "Current smoker",
+        "No smoker",
+        "ex-smoker"
+    ],
+    "FH_breast": [
+        "No",
+        "Yes=first degree",
+        "Yes=second degree"
+    ],
+    "FH_ovarian": [
+        "No",
+        "Yes=first degree",
+        "Yes=second degree"
+    ],
+    "FH_uterine": [
+        "No",
+        "Yes=first degree",
+        "Yes=second degree"
+    ],
+    "FH_colon": [
+        "No",
+        "Yes=first degree",
+        "Yes=second degree"
+    ],
+    "FH_Lynch": [
+        "No",
+        "Other",
+        "Yes=first degree"
+    ],
+    "FH_BRCA": [
+        "No",
+        "Yes=first degree"
+    ],
+    "Menopause": [
+        "postmenopausal",
+        "premenopausal"
+    ],
+    "PMH": [
+        "Chronic renal disease",
+        "Hypertension",
+        "No",
+        "Other",
+        "Others",
+        "Type 1 DM",
+        "Type 2 DM"
+    ],
+    "PH_breast": [
+        "No",
+        "Yes - Currently in remission",
+        "Yes - currently treated"
+    ],
+    "PH_uterine": [
+        "No",
+        "Yes - currently treated"
+    ],
+    "PH_colon": [
+        "No",
+        "Other"
+    ],
+    "PH_cancers_others": [
+        "No",
+        "Yes"
+    ],
+    "Symptom": [
+        "AUB",
+        "Abdominal discomfort and/or bloating",
+        "Abdominal pain",
+        "Asthenia and/or weight loss",
+        "Constitutional syndrome",
+        "DVT",
+        "Incidental",
+        "Metastasis",
+        "Other",
+        "abdominal mass",
+        "back pain",
+        "change of bowel movment",
+        "dyspnea",
+        "vaginal discharge"
+    ],
+    "Site": [
+        "Bilateral",
+        "Left",
+        "Right"
+    ],
+    "Tubes": [
+        "No",
+        "Yes"
+    ],
+    "Uterus": [
+        "No",
+        "Yes"
+    ],
+    "Vagina": [
+        "No",
+        "Yes"
+    ],
+    "Cytology": [
+        "Negative",
+        "positive"
+    ],
+    "Pelvic_peritoneum": [
+        "No",
+        "Yes"
+    ],
+    "Douglas": [
+        "No",
+        "Yes"
+    ],
+    "Vesicouterine": [
+        "No",
+        "Yes"
+    ],
+    "Broad_ligament": [
+        "No",
+        "Yes"
+    ],
+    "Recto_sigmoid": [
+        "No",
+        "Yes"
+    ],
+    "Other_bowel": [
+        "No",
+        "Yes"
+    ],
+    "Bladder": [
+        "No",
+        "Yes"
+    ],
+    "Pelvic_NS": [
+        "No",
+        "Yes"
+    ],
+    "abdominal_invasion": [
+        "No",
+        "omental cake",
+        "omental deposits < 2 cm",
+        "omental deposits >= 2 cm",
+        "peritoneal carcinomatosis"
+    ],
+    "Ascites": [
+        "Absent",
+        "Marked",
+        "Mild"
+    ],
+    "Pleura": [
+        "Marked effusion",
+        "Minimal effusion",
+        "No effusion"
+    ],
+    "Pleura_cytology": [
+        "Negative",
+        "Not done",
+        "Positive"
+    ],
+    "aortic_ln": [
+        "No",
+        "Yes"
+    ],
+    "iliac_ln": [
+        "No",
+        "Yes"
+    ],
+    "Inguinal_LN": [
+        "No",
+        "Yes"
+    ],
+    "Distant_metastasis": [
+        "No",
+        "Yes"
+    ],
+    "Distant_site_LS": [
+        "No",
+        "Yes"
+    ],
+    "Distant_site_lungP": [
+        "No",
+        "Yes"
+    ],
+    "Distant_site_dia": [
+        "No",
+        "Other",
+        "Yes"
+    ],
+    "Distant_site_stomach": [
+        "No",
+        "Yes"
+    ],
+    "Distant_site_retro": [
+        "No",
+        "Yes"
+    ],
+    "BRCA1": [
+        "Negative",
+        "positive; germline",
+        "positive; somatic",
+        "unknown"
+    ],
+    "BRCA2": [
+        "Negative",
+        "Other",
+        "positive; germline",
+        "positive; somatic",
+        "unknown"
+    ],
+    "MLH": [
+        "Negative",
+        "Other",
+        "positive; germline",
+        "positive; somatic",
+        "unknown"
+    ],
+    "MSH6": [
+        "Negative",
+        "Other",
+        "positive; germline",
+        "unknown"
+    ],
+    "PMS2": [
+        "Negative",
+        "Other",
+        "positive; somatic",
+        "unknown"
+    ],
+    "Histology": [
+        "Adult Granulosa Cell Tumor",
+        "Carcinosarcoma",
+        "Dysgerminoma",
+        "Endometrioid",
+        "HGSOC",
+        "Immature Teratomas",
+        "Juvenile Granulosa Cell Tumor",
+        "LGSOC",
+        "Other",
+        "Others; specify",
+        "Sertoli-Leydig Tumor",
+        "Squamous Cell Carcinoma",
+        "Undifferentiated",
+        "clear cell carcinoma",
+        "mucinous carcinoma"
+    ],
+    "Grade": [
+        "1.0",
+        "2.0",
+        "3.0"
+    ],
+    "Previous_hysterectomy": [
+        "No",
+        "Yes"
+    ],
+    "Previous_ovarian_surgery": [
+        "No",
+        "Yes"
+    ],
+    "Previous_endometriosis": [
+        "No",
+        "Other"
+    ],
+    "Abd_surg_others": [
+        "No",
+        "Other",
+        "Yes"
+    ],
+    "ECOG": [
+        "ECOG-0",
+        "ECOG-1",
+        "ECOG-2",
+        "ECOG-3",
+        "ECOG-4"
+    ]
 }
