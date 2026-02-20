@@ -132,3 +132,5 @@ if st.button("Calculate Probability"):
     proba = model.predict_proba(df_input)[0,1]
 
     st.success(f"Predicted Probability: {round(proba*100,2)}%")
+
+streamlit run app.py
