@@ -3,10 +3,23 @@ import pandas as pd
 import numpy as np
 import joblib
 import json
+import shap
 
-# ===============================
-# Load Models
-# ===============================
+# ==========================================
+# Page Config
+# ==========================================
+
+st.set_page_config(
+    page_title="OCISS",
+    layout="wide",
+)
+
+st.title("OCISS: Ovarian Cancer Individualised Scoring System")
+st.markdown("Clinical decision-support tool for predicting 5-year overall survival (OS5).")
+
+# ==========================================
+# Load Models & Metadata
+# ==========================================
 
 model1 = joblib.load("model1.pkl")
 model2 = joblib.load("model2.pkl")
@@ -20,11 +33,9 @@ model1_cat = metadata["model1_categorical"]
 model2_features = metadata["model2_features"]
 model2_cat = metadata["model2_categorical"]
 
-st.title("5-Year Ovarian Cancer Survival Predictor")
-
-# =====================================================
-# Define Categories (shortened example)
-# =====================================================
+# ==========================================
+# Load Category Dictionary (PASTE YOUR FULL DICTIONARY HERE)
+# ==========================================
 
 category_options = {
 
@@ -114,75 +125,146 @@ category_options = {
 "iliac_lymphadenectomy": ["No", "lymph node sampling", "selective lymphadenectomy", "systematic lymphadenectomy"]
 
 }
-# =====================================================
-# MODEL 1 SECTION
-# =====================================================
 
-st.header("Baseline Variables")
 
-baseline_input = {}
+# ==========================================
+# Helper: Build Input DataFrame
+# ==========================================
 
-for feature in model1_features:
-    if feature in model1_cat:
-        options = category_options.get(feature, ["No", "Yes"])
-        baseline_input[feature] = st.selectbox(feature, options)
-    else:
-        baseline_input[feature] = st.number_input(feature, value=0.0)
+def build_input_df(features, categorical_vars):
+    user_input = {}
 
-input_df1 = pd.DataFrame([baseline_input])
+    for feature in features:
 
-for col in model1_cat:
-    if col in input_df1.columns:
-        input_df1[col] = input_df1[col].astype(str)
+        if feature in categorical_vars:
+            options = category_options.get(feature, [])
+            user_input[feature] = st.selectbox(feature, options)
+        else:
+            user_input[feature] = st.number_input(feature, value=0.0)
 
-input_df1 = input_df1.reindex(columns=model1_features)
+    df = pd.DataFrame([user_input])
 
-if st.button("Calculate Baseline Survival"):
+    for col in categorical_vars:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
 
-    prob1 = model1.predict_proba(input_df1)[0][1]
-    st.session_state["prob1"] = prob1
+    return df
 
-# =====================================================
-# Display Baseline Result if Exists
-# =====================================================
+
+# ==========================================
+# BASELINE SECTION (MODEL 1)
+# ==========================================
+
+with st.expander("Baseline Clinical & Tumour Variables", expanded=True):
+
+    input_df1 = build_input_df(model1_features, model1_cat)
+    input_df1 = input_df1.reindex(columns=model1_features)
+
+    if st.button("Calculate Baseline Survival"):
+
+        prob1 = model1.predict_proba(input_df1)[0][1]
+        st.session_state["prob1"] = prob1
+        st.session_state["input_df1"] = input_df1
+
+
+# ==========================================
+# DISPLAY BASELINE RESULT
+# ==========================================
 
 if "prob1" in st.session_state:
 
     prob1 = st.session_state["prob1"]
-    st.success(f"Baseline 5-Year Survival: {prob1*100:.2f}%")
 
-    # =====================================================
-    # MODEL 2 SECTION
-    # =====================================================
+    col1, col2 = st.columns(2)
 
+    with col1:
+        st.metric(
+            label="Baseline 5-Year Survival",
+            value=f"{prob1*100:.2f}%"
+        )
+
+    # ==========================================
+    # SHAP FOR MODEL 1
+    # ==========================================
+
+    with st.expander("Explain Baseline Prediction (SHAP)"):
+        explainer1 = shap.TreeExplainer(model1)
+        shap_values1 = explainer1.shap_values(st.session_state["input_df1"])
+
+        if isinstance(shap_values1, list):
+            shap_values1 = shap_values1[1]
+
+        shap.force_plot(
+            explainer1.expected_value,
+            shap_values1[0],
+            st.session_state["input_df1"].iloc[0],
+            matplotlib=True
+        )
+
+    # ==========================================
+    # TREATMENT SECTION (MODEL 2)
+    # ==========================================
+
+    st.markdown("---")
     st.header("Treatment Variables")
 
-    treatment_input = {}
+    input_df2_partial = build_input_df(
+        [f for f in model2_features if f != "Model1_Prob"],
+        model2_cat
+    )
 
-    for feature in model2_features:
-        if feature == "Model1_Prob":
-            continue
+    input_df2_partial["Model1_Prob"] = prob1
 
-        if feature in model2_cat:
-            options = category_options.get(feature, ["No", "Yes"])
-            treatment_input[feature] = st.selectbox(feature, options)
-        else:
-            treatment_input[feature] = st.number_input(feature, value=0.0)
-
-    input_df2 = pd.DataFrame([treatment_input])
-    input_df2["Model1_Prob"] = prob1
-
-    for col in model2_cat:
-        if col in input_df2.columns:
-            input_df2[col] = input_df2[col].astype(str)
-
-    input_df2 = input_df2.reindex(columns=model2_features)
+    input_df2 = input_df2_partial.reindex(columns=model2_features)
 
     if st.button("Calculate Treatment-Adjusted Survival"):
 
         prob2 = model2.predict_proba(input_df2)[0][1]
+        st.session_state["prob2"] = prob2
+        st.session_state["input_df2"] = input_df2
 
-        st.success(f"Treatment-Adjusted 5-Year Survival: {prob2*100:.2f}%")
 
-        delta = prob2 - prob1
-        st.info(f"Absolute Survival Change: {delta*100:.2f}%")
+# ==========================================
+# DISPLAY MODEL 2 RESULTS
+# ==========================================
+
+if "prob2" in st.session_state:
+
+    prob1 = st.session_state["prob1"]
+    prob2 = st.session_state["prob2"]
+
+    delta = prob2 - prob1
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Baseline Survival", f"{prob1*100:.2f}%")
+    col2.metric("Treatment-Adjusted Survival", f"{prob2*100:.2f}%")
+    col3.metric("Absolute Change", f"{delta*100:.2f}%")
+
+    # ==========================================
+    # SHAP FOR MODEL 2
+    # ==========================================
+
+    with st.expander("Explain Treatment-Adjusted Prediction (SHAP)"):
+
+        explainer2 = shap.TreeExplainer(model2)
+        shap_values2 = explainer2.shap_values(st.session_state["input_df2"])
+
+        if isinstance(shap_values2, list):
+            shap_values2 = shap_values2[1]
+
+        shap.force_plot(
+            explainer2.expected_value,
+            shap_values2[0],
+            st.session_state["input_df2"].iloc[0],
+            matplotlib=True
+        )
+
+# ==========================================
+# Footer
+# ==========================================
+
+st.markdown("---")
+st.caption("For research use only. Not intended to replace clinical judgment.")
+
+
