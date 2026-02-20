@@ -18,6 +18,19 @@ st.title("OCISS: Ovarian Cancer Individualised Scoring System")
 st.markdown("Clinical decision-support tool for predicting 5-year overall survival (OS5).")
 
 # ==========================================
+# Confidence Interval Helper
+# ==========================================
+
+def probability_ci(p, n, z=1.96):
+    se = np.sqrt((p * (1 - p)) / n)
+    lower = max(0, p - z * se)
+    upper = min(1, p + z * se)
+    return lower, upper
+
+# Replace with your actual training size
+TRAIN_SIZE = 560
+
+# ==========================================
 # Load Models & Metadata
 # ==========================================
 
@@ -34,7 +47,7 @@ model2_features = metadata["model2_features"]
 model2_cat = metadata["model2_categorical"]
 
 # ==========================================
-# Load Category Dictionary (PASTE YOUR FULL DICTIONARY HERE)
+# Category Dictionary
 # ==========================================
 
 category_options = {
@@ -174,6 +187,7 @@ with st.expander("Baseline Clinical & Tumour Variables", expanded=True):
 if "prob1" in st.session_state:
 
     prob1 = st.session_state["prob1"]
+    lower1, upper1 = probability_ci(prob1, TRAIN_SIZE)
 
     col1, col2 = st.columns(2)
 
@@ -182,6 +196,7 @@ if "prob1" in st.session_state:
             label="Baseline 5-Year Survival",
             value=f"{prob1*100:.2f}%"
         )
+        st.caption(f"95% CI: {lower1*100:.2f}% – {upper1*100:.2f}%")
 
     # ==========================================
     # SHAP FOR MODEL 1
@@ -243,13 +258,20 @@ if "prob2" in st.session_state:
     prob1 = st.session_state["prob1"]
     prob2 = st.session_state["prob2"]
 
+    lower2, upper2 = probability_ci(prob2, TRAIN_SIZE)
     delta = prob2 - prob1
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Baseline Survival", f"{prob1*100:.2f}%")
-    col2.metric("Treatment-Adjusted Survival", f"{prob2*100:.2f}%")
-    col3.metric("Absolute Change", f"{delta*100:.2f}%")
+    with col1:
+        st.metric("Baseline Survival", f"{prob1*100:.2f}%")
+
+    with col2:
+        st.metric("Treatment-Adjusted Survival", f"{prob2*100:.2f}%")
+        st.caption(f"95% CI: {lower2*100:.2f}% – {upper2*100:.2f}%")
+
+    with col3:
+        st.metric("Absolute Change", f"{delta*100:.2f}%")
 
     # ==========================================
     # SHAP FOR MODEL 2
