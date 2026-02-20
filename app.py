@@ -187,7 +187,7 @@ if "prob1" in st.session_state:
     # SHAP FOR MODEL 1
     # ==========================================
 
-  with st.expander("Explain Baseline Prediction (SHAP)"):
+with st.expander("Explain Baseline Prediction (SHAP)"):
 
     explainer1 = shap.TreeExplainer(model1)
     shap_values1 = explainer1.shap_values(st.session_state["input_df1"])
@@ -256,7 +256,7 @@ if "prob2" in st.session_state:
     # SHAP FOR MODEL 2
     # ==========================================
 
-    with st.expander("Explain Treatment-Adjusted Prediction (SHAP)"):
+with st.expander("Explain Treatment-Adjusted Prediction (SHAP)"):
 
     explainer2 = shap.TreeExplainer(model2)
     shap_values2 = shap.TreeExplainer(model2).shap_values(st.session_state["input_df2"])
