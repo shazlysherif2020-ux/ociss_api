@@ -3,3 +3,6 @@ pandas
 numpy
 catboost
 joblib
+shap
+matplotlib
+scikit-learn
