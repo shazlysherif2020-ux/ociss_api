@@ -187,20 +187,31 @@ if "prob1" in st.session_state:
     # SHAP FOR MODEL 1
     # ==========================================
 
-    with st.expander("Explain Baseline Prediction (SHAP)"):
-        explainer1 = shap.TreeExplainer(model1)
-        shap_values1 = explainer1.shap_values(st.session_state["input_df1"])
+  with st.expander("Explain Baseline Prediction (SHAP)"):
 
-        if isinstance(shap_values1, list):
-            shap_values1 = shap_values1[1]
+    explainer1 = shap.TreeExplainer(model1)
+    shap_values1 = explainer1.shap_values(st.session_state["input_df1"])
 
-        shap.force_plot(
-            explainer1.expected_value,
-            shap_values1[0],
-            st.session_state["input_df1"].iloc[0],
-            matplotlib=True
-        )
+    if isinstance(shap_values1, list):
+        shap_values1 = shap_values1[1]
 
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure()
+
+    shap.plots.waterfall(
+        shap.Explanation(
+            values=shap_values1[0],
+            base_values=explainer1.expected_value,
+            data=st.session_state["input_df1"].iloc[0],
+            feature_names=st.session_state["input_df1"].columns
+        ),
+        show=False
+    )
+
+    st.pyplot(fig)
+    plt.close(fig)
+      
     # ==========================================
     # TREATMENT SECTION (MODEL 2)
     # ==========================================
@@ -247,19 +258,28 @@ if "prob2" in st.session_state:
 
     with st.expander("Explain Treatment-Adjusted Prediction (SHAP)"):
 
-        explainer2 = shap.TreeExplainer(model2)
-        shap_values2 = explainer2.shap_values(st.session_state["input_df2"])
+    explainer2 = shap.TreeExplainer(model2)
+    shap_values2 = shap.TreeExplainer(model2).shap_values(st.session_state["input_df2"])
 
-        if isinstance(shap_values2, list):
-            shap_values2 = shap_values2[1]
+    if isinstance(shap_values2, list):
+        shap_values2 = shap_values2[1]
 
-        shap.force_plot(
-            explainer2.expected_value,
-            shap_values2[0],
-            st.session_state["input_df2"].iloc[0],
-            matplotlib=True
-        )
+    import matplotlib.pyplot as plt
 
+    fig = plt.figure()
+
+    shap.plots.waterfall(
+        shap.Explanation(
+            values=shap_values2[0],
+            base_values=explainer2.expected_value,
+            data=st.session_state["input_df2"].iloc[0],
+            feature_names=st.session_state["input_df2"].columns
+        ),
+        show=False
+    )
+
+    st.pyplot(fig)
+    plt.close(fig)
 # ==========================================
 # Footer
 # ==========================================
