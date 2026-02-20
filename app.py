@@ -133,4 +133,3 @@ if st.button("Calculate Probability"):
 
     st.success(f"Predicted Probability: {round(proba*100,2)}%")
 
-streamlit run app.py
