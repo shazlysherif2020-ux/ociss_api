@@ -407,7 +407,7 @@ if "prob2" in st.session_state and "css_med2" in st.session_state:
     with c4:
         st.metric("Absolute Change (OS5)", f"{delta_prob*100:.2f}%")
         if not np.isnan(delta_med):
-            st.caption(f"Δ Median CSS: {delta_med:.1f/7} months")
+            st.caption(f"Δ Median CSS: {(delta_med/4.345):.1f} months")
         else:
             st.caption("Δ Median CSS: NA")
 
