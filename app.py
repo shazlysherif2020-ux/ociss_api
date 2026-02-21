@@ -300,7 +300,7 @@ if "prob1" in st.session_state and "css_med1" in st.session_state:
 
 
 # ==========================================
-# TREATMENT SECTION (OS5 Model 2 + CSS Model 2)
+# TREATMENT SECTION (single UI used for OS5 Model 2 + CSS Model 2)
 # ==========================================
 
 if "prob1" in st.session_state and "css_lp1" in st.session_state:
@@ -308,33 +308,42 @@ if "prob1" in st.session_state and "css_lp1" in st.session_state:
     st.markdown("---")
     st.header("Treatment Variables")
 
-    prob1 = st.session_state["prob1"]
-    lp1 = st.session_state["css_lp1"]
+    prob1 = st.session_state["prob1"]      # OS5 baseline probability
+    lp1   = st.session_state["css_lp1"]    # CSS baseline Cox linear predictor
 
-    # Build OS5 treatment input
-    input_df2_partial = build_input_df(
-        [f for f in model2_features if f != "Model1_Prob"],
-        model2_cat,
-        prefix="treatment_os5"
-    )
-    input_df2_partial["Model1_Prob"] = prob1
-    input_df2 = input_df2_partial.reindex(columns=model2_features)
+    # --- Build ONE treatment form using the union of treatment variables from both model2 feature lists ---
+    os5_treat_features = [f for f in model2_features if f != "Model1_Prob"]
+    css_treat_features = [f for f in css_m2_features if f != "Model1_Risk"]
 
-    # Build CSS treatment input
-    css_df2_partial = build_input_df(
-        [f for f in css_m2_features if f != "Model1_Risk"],
-        css_m2_cat,
-        prefix="treatment_css"
+    # preserve order: OS5 list first, then append any missing from CSS list
+    treat_union = os5_treat_features + [f for f in css_treat_features if f not in os5_treat_features]
+
+    # determine which of those are categorical (union)
+    treat_union_cat = list(dict.fromkeys(model2_cat + css_m2_cat))  # unique, stable order
+
+    # Build single UI DataFrame
+    treat_df = build_input_df(
+        treat_union,
+        treat_union_cat,
+        prefix="treatment"
     )
-    css_df2_partial["Model1_Risk"] = lp1
-    css_input2 = css_df2_partial.reindex(columns=css_m2_features)
+
+    # --- Assemble OS5 Model 2 input ---
+    input_df2 = treat_df.copy()
+    input_df2["Model1_Prob"] = prob1
+    input_df2 = input_df2.reindex(columns=model2_features)
+
+    # --- Assemble CSS Model 2 input ---
+    css_input2 = treat_df.copy()
+    css_input2["Model1_Risk"] = lp1
+    css_input2 = css_input2.reindex(columns=css_m2_features)
 
     if st.button("Calculate Treatment-Adjusted Survival", key="btn_treatment"):
 
-        # ---- OS5 probability (Model 2) ----
+        # OS5 probability (Model 2)
         prob2 = float(model2.predict_proba(input_df2)[0][1])
 
-        # ---- CSS median months (Survival Model 2) ----
+        # CSS median months (Survival Model 2)
         lp2 = float(css_model2.predict(css_input2)[0])
         t2, S2, S2lo, S2hi = patient_survival_curve_from_baseline(lp2, css_baseline_m2)
 
@@ -347,7 +356,6 @@ if "prob1" in st.session_state and "css_lp1" in st.session_state:
 
         st.session_state["css_lp2"] = lp2
         st.session_state["css_med2"] = (med2, med2_lo, med2_hi)
-
 
 # ==========================================
 # DISPLAY TREATMENT-ADJUSTED RESULTS
