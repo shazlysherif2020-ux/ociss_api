@@ -15,31 +15,84 @@ st.set_page_config(
 )
 
 st.title("OCISS: Ovarian Cancer Individualised Scoring System")
-st.markdown("Clinical decision-support tool for predicting 5-year overall survival (OS5).")
+st.markdown(
+    "Clinical decision-support tool for predicting **5-year overall survival (OS5)** and "
+    "**cancer-specific survival duration (median months)**."
+)
 
 # ==========================================
-# Confidence Interval Helper
+# Helpers
 # ==========================================
 
 def probability_ci(p, n, z=1.96):
+    """Approximate Wald CI for a probability. (Same method you used previously.)"""
     se = np.sqrt((p * (1 - p)) / n)
     lower = max(0, p - z * se)
     upper = min(1, p + z * se)
     return lower, upper
 
-# Replace with your actual training size
+def load_json(path: str) -> dict:
+    with open(path, "r") as f:
+        return json.load(f)
+
+def patient_survival_curve_from_baseline(lp: float, baseline: dict):
+    """
+    Cox: S(t|x) = S0(t)^(exp(lp))
+    baseline dict includes: time, S0, S0_lower, S0_upper
+    """
+    t = np.array(baseline["time"], dtype=float)
+    S0 = np.array(baseline["S0"], dtype=float)
+    S0_lo = np.array(baseline["S0_lower"], dtype=float)
+    S0_hi = np.array(baseline["S0_upper"], dtype=float)
+
+    power = np.exp(lp)
+
+    S = np.power(S0, power)
+    S_lo = np.power(S0_lo, power)
+    S_hi = np.power(S0_hi, power)
+
+    return t, S, S_lo, S_hi
+
+def median_time_from_curve(t: np.ndarray, S: np.ndarray):
+    """First time where survival <= 0.5; if never, return np.nan."""
+    idx = np.where(S <= 0.5)[0]
+    if len(idx) == 0:
+        return np.nan
+    return float(t[idx[0]])
+
+def build_input_df(features, categorical_vars, prefix: str):
+    """
+    Build a single-row DataFrame from Streamlit inputs.
+    prefix is used to avoid Streamlit key collisions between sections.
+    """
+    user_input = {}
+
+    for feature in features:
+        if feature in categorical_vars:
+            options = category_options.get(feature, [])
+            user_input[feature] = st.selectbox(feature, options, key=f"{prefix}_cat_{feature}")
+        else:
+            user_input[feature] = st.number_input(feature, value=0.0, key=f"{prefix}_num_{feature}")
+
+    df_out = pd.DataFrame([user_input])
+
+    for col in categorical_vars:
+        if col in df_out.columns:
+            df_out[col] = df_out[col].astype(str)
+
+    return df_out
+
+# Replace with your actual OS5 training size (as you used before)
 TRAIN_SIZE = 560
 
 # ==========================================
-# Load Models & Metadata
+# Load OS5 Models & Metadata (existing files)
 # ==========================================
 
 model1 = joblib.load("model1.pkl")
 model2 = joblib.load("model2.pkl")
 
-with open("metadata.json") as f:
-    metadata = json.load(f)
-
+metadata = load_json("metadata.json")
 model1_features = metadata["model1_features"]
 model1_cat = metadata["model1_categorical"]
 
@@ -47,7 +100,26 @@ model2_features = metadata["model2_features"]
 model2_cat = metadata["model2_categorical"]
 
 # ==========================================
-# Category Dictionary
+# Load Survival (OS_duration / CSS) Models & Metadata (NEW files you will upload)
+# ==========================================
+
+# Expect these files to exist in the repo:
+# css_model1.pkl, css_model2.pkl, css_metadata.json, css_baseline_m1.json, css_baseline_m2.json
+css_model1 = joblib.load("css_model1.pkl")
+css_model2 = joblib.load("css_model2.pkl")
+
+css_metadata = load_json("css_metadata.json")
+css_m1_features = css_metadata["css_model1_features"]
+css_m1_cat = css_metadata["css_model1_categorical"]
+
+css_m2_features = css_metadata["css_model2_features"]           # includes "Model1_Risk"
+css_m2_cat = css_metadata["css_model2_categorical"]
+
+css_baseline_m1 = load_json("css_baseline_m1.json")
+css_baseline_m2 = load_json("css_baseline_m2.json")
+
+# ==========================================
+# Category Dictionary (your curated categories)
 # ==========================================
 
 category_options = {
@@ -139,70 +211,69 @@ category_options = {
 
 }
 
-
 # ==========================================
-# Helper: Build Input DataFrame
-# ==========================================
-
-def build_input_df(features, categorical_vars):
-    user_input = {}
-
-    for feature in features:
-
-        if feature in categorical_vars:
-            options = category_options.get(feature, [])
-            user_input[feature] = st.selectbox(feature, options)
-        else:
-            user_input[feature] = st.number_input(feature, value=0.0)
-
-    df = pd.DataFrame([user_input])
-
-    for col in categorical_vars:
-        if col in df.columns:
-            df[col] = df[col].astype(str)
-
-    return df
-
-
-# ==========================================
-# BASELINE SECTION (MODEL 1)
+# BASELINE SECTION (OS5 Model 1 + CSS Model 1)
 # ==========================================
 
 with st.expander("Baseline Clinical & Tumour Variables", expanded=True):
 
-    input_df1 = build_input_df(model1_features, model1_cat)
+    # Build baseline input ONCE (same baseline variables drive OS5 Model1 and CSS Model1)
+    input_df1 = build_input_df(model1_features, model1_cat, prefix="baseline")
     input_df1 = input_df1.reindex(columns=model1_features)
 
-    if st.button("Calculate Baseline Survival"):
+    if st.button("Calculate Baseline Survival", key="btn_baseline"):
+        # ---- OS5 probability (Model 1) ----
+        prob1 = float(model1.predict_proba(input_df1)[0][1])
 
-        prob1 = model1.predict_proba(input_df1)[0][1]
+        # ---- CSS median months (Survival Model 1) ----
+        # Build CSS model1 input using its feature list (should match baseline variables)
+        css_input1 = input_df1.reindex(columns=css_m1_features)
+        lp1 = float(css_model1.predict(css_input1)[0])
+
+        t, S, Slo, Shi = patient_survival_curve_from_baseline(lp1, css_baseline_m1)
+        med1 = median_time_from_curve(t, S)
+        med1_lo = median_time_from_curve(t, Slo)
+        med1_hi = median_time_from_curve(t, Shi)
+
         st.session_state["prob1"] = prob1
         st.session_state["input_df1"] = input_df1
 
+        st.session_state["css_lp1"] = lp1
+        st.session_state["css_med1"] = (med1, med1_lo, med1_hi)
+
 
 # ==========================================
-# DISPLAY BASELINE RESULT
+# DISPLAY BASELINE RESULTS
 # ==========================================
 
-if "prob1" in st.session_state:
+if "prob1" in st.session_state and "css_med1" in st.session_state:
 
     prob1 = st.session_state["prob1"]
     lower1, upper1 = probability_ci(prob1, TRAIN_SIZE)
 
-    col1, col2 = st.columns(2)
+    med1, med1_lo, med1_hi = st.session_state["css_med1"]
 
-    with col1:
-        st.metric(
-            label="Baseline 5-Year Survival",
-            value=f"{prob1*100:.2f}%"
-        )
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.metric("Baseline 5-Year Survival (OS5 Model 1)", f"{prob1*100:.2f}%")
         st.caption(f"95% CI: {lower1*100:.2f}% – {upper1*100:.2f}%")
 
+    with c2:
+        st.metric(
+            "Median Cancer-Specific Survival (CSS Model 1)",
+            f"{med1:.1f} months" if not np.isnan(med1) else "Not reached"
+        )
+        if (not np.isnan(med1_lo)) and (not np.isnan(med1_hi)):
+            st.caption(f"95% CI (approx): {med1_lo:.1f} – {med1_hi:.1f} months")
+        else:
+            st.caption("95% CI (approx): not reached within follow-up")
+
     # ==========================================
-    # SHAP FOR MODEL 1
+    # SHAP FOR OS5 MODEL 1
     # ==========================================
 
-    with st.expander("Explain Baseline Prediction (SHAP)"):
+    with st.expander("Explain Baseline OS5 Prediction (SHAP)"):
 
         explainer1 = shap.TreeExplainer(model1)
         shap_values1 = explainer1.shap_values(st.session_state["input_df1"])
@@ -227,57 +298,101 @@ if "prob1" in st.session_state:
         st.pyplot(fig)
         plt.close(fig)
 
-    # ==========================================
-    # TREATMENT SECTION (MODEL 2)
-    # ==========================================
+
+# ==========================================
+# TREATMENT SECTION (OS5 Model 2 + CSS Model 2)
+# ==========================================
+
+if "prob1" in st.session_state and "css_lp1" in st.session_state:
 
     st.markdown("---")
     st.header("Treatment Variables")
 
+    prob1 = st.session_state["prob1"]
+    lp1 = st.session_state["css_lp1"]
+
+    # Build OS5 treatment input
     input_df2_partial = build_input_df(
         [f for f in model2_features if f != "Model1_Prob"],
-        model2_cat
+        model2_cat,
+        prefix="treatment_os5"
     )
-
     input_df2_partial["Model1_Prob"] = prob1
     input_df2 = input_df2_partial.reindex(columns=model2_features)
 
-    if st.button("Calculate Treatment-Adjusted Survival"):
+    # Build CSS treatment input
+    css_df2_partial = build_input_df(
+        [f for f in css_m2_features if f != "Model1_Risk"],
+        css_m2_cat,
+        prefix="treatment_css"
+    )
+    css_df2_partial["Model1_Risk"] = lp1
+    css_input2 = css_df2_partial.reindex(columns=css_m2_features)
 
-        prob2 = model2.predict_proba(input_df2)[0][1]
+    if st.button("Calculate Treatment-Adjusted Survival", key="btn_treatment"):
+
+        # ---- OS5 probability (Model 2) ----
+        prob2 = float(model2.predict_proba(input_df2)[0][1])
+
+        # ---- CSS median months (Survival Model 2) ----
+        lp2 = float(css_model2.predict(css_input2)[0])
+        t2, S2, S2lo, S2hi = patient_survival_curve_from_baseline(lp2, css_baseline_m2)
+
+        med2 = median_time_from_curve(t2, S2)
+        med2_lo = median_time_from_curve(t2, S2lo)
+        med2_hi = median_time_from_curve(t2, S2hi)
+
         st.session_state["prob2"] = prob2
         st.session_state["input_df2"] = input_df2
 
+        st.session_state["css_lp2"] = lp2
+        st.session_state["css_med2"] = (med2, med2_lo, med2_hi)
+
 
 # ==========================================
-# DISPLAY MODEL 2 RESULTS
+# DISPLAY TREATMENT-ADJUSTED RESULTS
 # ==========================================
 
-if "prob2" in st.session_state:
+if "prob2" in st.session_state and "css_med2" in st.session_state:
 
     prob1 = st.session_state["prob1"]
     prob2 = st.session_state["prob2"]
-
     lower2, upper2 = probability_ci(prob2, TRAIN_SIZE)
-    delta = prob2 - prob1
 
-    col1, col2, col3 = st.columns(3)
+    med1, _, _ = st.session_state["css_med1"]
+    med2, med2_lo, med2_hi = st.session_state["css_med2"]
 
-    with col1:
-        st.metric("Baseline Survival", f"{prob1*100:.2f}%")
+    delta_prob = prob2 - prob1
+    delta_med = med2 - med1 if (not np.isnan(med1) and not np.isnan(med2)) else np.nan
 
-    with col2:
-        st.metric("Treatment-Adjusted Survival", f"{prob2*100:.2f}%")
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        st.metric("Baseline OS5 (Model 1)", f"{prob1*100:.2f}%")
+
+    with c2:
+        st.metric("Treatment OS5 (Model 2)", f"{prob2*100:.2f}%")
         st.caption(f"95% CI: {lower2*100:.2f}% – {upper2*100:.2f}%")
 
-    with col3:
-        st.metric("Absolute Change", f"{delta*100:.2f}%")
+    with c3:
+        st.metric("Median CSS (Model 2)", f"{med2:.1f} months" if not np.isnan(med2) else "Not reached")
+        if (not np.isnan(med2_lo)) and (not np.isnan(med2_hi)):
+            st.caption(f"95% CI (approx): {med2_lo:.1f} – {med2_hi:.1f} months")
+        else:
+            st.caption("95% CI (approx): not reached within follow-up")
+
+    with c4:
+        st.metric("Absolute Change (OS5)", f"{delta_prob*100:.2f}%")
+        if not np.isnan(delta_med):
+            st.caption(f"Δ Median CSS: {delta_med:.1f} months")
+        else:
+            st.caption("Δ Median CSS: NA")
 
     # ==========================================
-    # SHAP FOR MODEL 2
+    # SHAP FOR OS5 MODEL 2
     # ==========================================
 
-    with st.expander("Explain Treatment-Adjusted Prediction (SHAP)"):
+    with st.expander("Explain Treatment-Adjusted OS5 Prediction (SHAP)"):
 
         explainer2 = shap.TreeExplainer(model2)
         shap_values2 = explainer2.shap_values(st.session_state["input_df2"])
@@ -301,7 +416,6 @@ if "prob2" in st.session_state:
 
         st.pyplot(fig)
         plt.close(fig)
-
 
 # ==========================================
 # Footer
