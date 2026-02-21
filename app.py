@@ -280,10 +280,7 @@ if "prob1" in st.session_state and "css_med1" in st.session_state:
                 "Median Cancer-Specific Survival (CSS Model 1)",
                 "Not reached"
             )
-        'if (not np.isnan(med1_lo)) and (not np.isnan(med1_hi)):
-         '   st.caption(f"95% CI (approx): {med1_lo:.1f} – {med1_hi:.1f} months")
-        'else:
-         '   st.caption("95% CI (approx): not reached within follow-up")
+       
 
     # ==========================================
     # SHAP FOR OS5 MODEL 1
@@ -406,10 +403,7 @@ if "prob2" in st.session_state and "css_med2" in st.session_state:
         
             st.metric("Median CSS (Model 2)", f"{med2_m:.1f} months")
         
-            'if not np.isnan(med2_lo_m) and not np.isnan(med2_hi_m):
-             '   st.caption(f"95% CI (approx): {med2_lo_m:.1f} – {med2_hi_m:.1f} months")
-            'else:
-             '   st.caption("95% CI (approx): not reached within follow-up")
+           
         else:
             st.metric("Median CSS (Model 2)", "Not reached")
 
