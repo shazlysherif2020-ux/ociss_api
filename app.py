@@ -399,19 +399,19 @@ if "prob2" in st.session_state and "css_med2" in st.session_state:
         st.caption(f"95% CI: {lower2*100:.2f}% – {upper2*100:.2f}%")
 
     with c3:
-       if not np.isnan(med2):
-    med2_m = med2 / 4.345
-    med2_lo_m = med2_lo / 4.345 if not np.isnan(med2_lo) else np.nan
-    med2_hi_m = med2_hi / 4.345 if not np.isnan(med2_hi) else np.nan
-
-    st.metric("Median CSS (Model 2)", f"{med2_m:.1f} months")
-
-    if not np.isnan(med2_lo_m) and not np.isnan(med2_hi_m):
-        st.caption(f"95% CI (approx): {med2_lo_m:.1f} – {med2_hi_m:.1f} months")
-    else:
-        st.caption("95% CI (approx): not reached within follow-up")
-else:
-    st.metric("Median CSS (Model 2)", "Not reached")
+        if not np.isnan(med2):
+            med2_m = med2 / 4.345
+            med2_lo_m = med2_lo / 4.345 if not np.isnan(med2_lo) else np.nan
+            med2_hi_m = med2_hi / 4.345 if not np.isnan(med2_hi) else np.nan
+    
+        st.metric("Median CSS (Model 2)", f"{med2_m:.1f} months")
+    
+        if not np.isnan(med2_lo_m) and not np.isnan(med2_hi_m):
+            st.caption(f"95% CI (approx): {med2_lo_m:.1f} – {med2_hi_m:.1f} months")
+        else:
+            st.caption("95% CI (approx): not reached within follow-up")
+        else:
+            st.metric("Median CSS (Model 2)", "Not reached")
 
     with c4:
         st.metric("Absolute Change (OS5)", f"{delta_prob*100:.2f}%")
