@@ -410,8 +410,8 @@ if "prob2" in st.session_state and "css_med2" in st.session_state:
             st.caption(f"95% CI (approx): {med2_lo_m:.1f} – {med2_hi_m:.1f} months")
         else:
             st.caption("95% CI (approx): not reached within follow-up")
-        else:
-            st.metric("Median CSS (Model 2)", "Not reached")
+            else:
+                st.metric("Median CSS (Model 2)", "Not reached")
 
     with c4:
         st.metric("Absolute Change (OS5)", f"{delta_prob*100:.2f}%")
