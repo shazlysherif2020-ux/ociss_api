@@ -63,16 +63,31 @@ def median_time_from_curve(t: np.ndarray, S: np.ndarray):
 def build_input_df(features, categorical_vars, prefix: str):
     """
     Build a single-row DataFrame from Streamlit inputs.
+    Now displayed as 3 input fields per row (3 columns layout).
     prefix is used to avoid Streamlit key collisions between sections.
     """
     user_input = {}
 
-    for feature in features:
-        if feature in categorical_vars:
-            options = category_options.get(feature, [])
-            user_input[feature] = st.selectbox(feature, options, key=f"{prefix}_cat_{feature}")
-        else:
-            user_input[feature] = st.number_input(feature, value=0.0, key=f"{prefix}_num_{feature}")
+    # Create rows of 3 columns
+    for i in range(0, len(features), 3):
+        cols = st.columns(3)
+        row_features = features[i:i+3]
+
+        for col_idx, feature in enumerate(row_features):
+            with cols[col_idx]:
+                if feature in categorical_vars:
+                    options = category_options.get(feature, [])
+                    user_input[feature] = st.selectbox(
+                        feature,
+                        options,
+                        key=f"{prefix}_cat_{feature}"
+                    )
+                else:
+                    user_input[feature] = st.number_input(
+                        feature,
+                        value=0.0,
+                        key=f"{prefix}_num_{feature}"
+                    )
 
     df_out = pd.DataFrame([user_input])
 
@@ -81,7 +96,6 @@ def build_input_df(features, categorical_vars, prefix: str):
             df_out[col] = df_out[col].astype(str)
 
     return df_out
-
 # Replace with your actual OS5 training size (as you used before)
 TRAIN_SIZE = 560
 
